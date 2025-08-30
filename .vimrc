@@ -128,7 +128,7 @@ augroup go_keys
 augroup END
 
 " ---------------------------------
-" Python host 
+" Python host (optional, if using pyenv)
 " ---------------------------------
 if executable('pyenv')
   let g:python3_host_prog = trim(system('pyenv which python3'))
@@ -146,3 +146,34 @@ nnoremap <C-Up>    :resize -2<CR>
 nnoremap <C-Down>  :resize +2<CR>
 nnoremap <C-Left>  :vertical resize -2<CR>
 nnoremap <C-Right> :vertical resize +2<CR>
+
+
+" Show a per-window statusline (used as the horizontal separator)
+set laststatus=2
+
+" Function: dashed line only for windows that have another window below
+function! s:UpdateDashedSeparators() abort
+  let l:cur = winnr()
+  " Visit each window and set its statusline
+  for l:w in range(1, winnr('$'))
+    execute l:w . 'wincmd w'
+    " If there is a window below this one, draw dashes. Otherwise clear it.
+    if winnr('j') != winnr()
+      setlocal statusline=%{repeat('-',winwidth(0))}
+    else
+      setlocal statusline=
+    endif
+  endfor
+  " Go back to the original window
+  execute l:cur . 'wincmd w'
+endfunction
+
+augroup OnlyMiddleDashed
+  autocmd!
+  autocmd VimEnter,WinEnter,WinLeave,BufWinEnter,VimResized * call s:UpdateDashedSeparators()
+augroup END
+
+" No colors; keep separators plain
+highlight StatusLine   cterm=NONE ctermfg=NONE ctermbg=NONE
+highlight StatusLineNC cterm=NONE ctermfg=NONE ctermbg=NONE
+
